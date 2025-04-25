@@ -1,10 +1,10 @@
 import { Box, Heading, Stat, StatLabel, StatNumber, StatGroup } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
+import { API_ENDPOINTS } from '../constants/api'
 
 interface BitsStats {
-  averageBitsPerMessage: number
+  avgBits: number
   totalBits: number
-  highestBitsMessage: number
 }
 
 const BitsStats = () => {
@@ -14,7 +14,7 @@ const BitsStats = () => {
   useEffect(() => {
     const fetchBitsStats = async () => {
       try {
-        const response = await fetch('https://twitch-chat-api.onrender.com/api/bits')
+        const response = await fetch(API_ENDPOINTS.BITS)
         if (!response.ok) {
           throw new Error('Failed to fetch bits stats')
         }
@@ -44,15 +44,11 @@ const BitsStats = () => {
       <StatGroup>
         <Stat>
           <StatLabel>Average Bits per Message</StatLabel>
-          <StatNumber>{stats.averageBitsPerMessage.toFixed(2)}</StatNumber>
+          <StatNumber>{stats.avgBits.toFixed(2)}</StatNumber>
         </Stat>
         <Stat>
           <StatLabel>Total Bits</StatLabel>
           <StatNumber>{stats.totalBits.toLocaleString()}</StatNumber>
-        </Stat>
-        <Stat>
-          <StatLabel>Highest Bits in a Message</StatLabel>
-          <StatNumber>{stats.highestBitsMessage.toLocaleString()}</StatNumber>
         </Stat>
       </StatGroup>
     </Box>

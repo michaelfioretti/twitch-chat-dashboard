@@ -14,6 +14,7 @@ import {
   Image,
   HStack,
 } from '@chakra-ui/react';
+import { API_ENDPOINTS } from '../constants/api';
 
 interface Streamer {
   name: string;
@@ -30,19 +31,18 @@ interface Streamer {
 const TopStreamers = () => {
   const [streamers, setStreamers] = useState<Streamer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStreamers = async () => {
       try {
-        const response = await fetch('https://twitch-chat-api.onrender.com/api/streamer/top10');
+        const response = await fetch(API_ENDPOINTS.TOP_STREAMERS);
         if (!response.ok) {
           throw new Error('Failed to fetch streamers');
         }
         const data = await response.json();
         setStreamers(data.data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Error fetching streamers:', err);
       } finally {
         setLoading(false);
       }
@@ -57,14 +57,6 @@ const TopStreamers = () => {
         <Skeleton height="40px" mb={4} />
         <Skeleton height="40px" mb={4} />
         <Skeleton height="40px" mb={4} />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box p={4} color="red.500">
-        <Text>Error: {error}</Text>
       </Box>
     );
   }

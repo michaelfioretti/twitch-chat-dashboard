@@ -1,5 +1,6 @@
 import { Box, Heading, Stat, StatLabel, StatNumber, StatGroup } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
+import { API_ENDPOINTS } from '../constants/api'
 
 interface OverviewStats {
   totalMessages: number
@@ -13,7 +14,7 @@ const StatsOverview = () => {
   useEffect(() => {
     const fetchOverviewStats = async () => {
       try {
-        const response = await fetch('https://twitch-chat-api.onrender.com/api/stats/overview')
+        const response = await fetch(API_ENDPOINTS.OVERVIEW)
         if (!response.ok) {
           throw new Error('Failed to fetch overview stats')
         }
