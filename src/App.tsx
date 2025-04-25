@@ -1,8 +1,8 @@
-import { Box, Heading, Grid } from '@chakra-ui/react'
+import { Box, Heading, Grid, Container } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
-import StatsOverview from './components/StatsOverview'
 import TopStreamers from './components/TopStreamers'
 import BitsStats from './components/BitsStats'
+import IntroSection from './components/IntroSection'
 
 const MotionBox = motion(Box)
 const MotionHeading = motion(Heading)
@@ -32,43 +32,92 @@ function App() {
   }
 
   return (
-    <Box minH="100vh" bg="gray.900" color="white">
-      <MotionBox
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        py={12}
+    <Box
+      minH="100vh"
+      w="100vw"
+      bg="gray.900"
+      color="white"
+      position="relative"
+      overflow="hidden"
+      _before={{
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%)",
+        zIndex: 0
+      }}
+    >
+      <Container
+        maxW="100%"
         px={{ base: 4, md: 8, lg: 12 }}
+        py={{ base: 8, md: 12, lg: 16 }}
+        position="relative"
+        zIndex={1}
       >
-        <MotionHeading
-          variants={itemVariants}
-          mb={12}
-          textAlign="center"
-          size="2xl"
-          color="purple.400"
-          letterSpacing="tight"
-          fontWeight="bold"
+        <MotionBox
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
         >
-          Twitch Chat Analytics
-        </MotionHeading>
+          <MotionHeading
+            variants={itemVariants}
+            mb={{ base: 8, md: 12, lg: 16 }}
+            textAlign="center"
+            size={{ base: "2xl", md: "3xl", lg: "4xl" }}
+            color="purple.400"
+            letterSpacing="tight"
+            fontWeight="bold"
+            textShadow="0 0 20px rgba(139, 92, 246, 0.3)"
+          >
+            Twitch Chat Analytics
+          </MotionHeading>
 
-        <Grid
-          templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }}
-          gap={{ base: 8, lg: 12 }}
-          mb={12}
-        >
-          <MotionBox variants={itemVariants}>
-            <StatsOverview />
+          <MotionBox
+            variants={itemVariants}
+            mb={{ base: 8, md: 12, lg: 16 }}
+          >
+            <IntroSection />
           </MotionBox>
-          <MotionBox variants={itemVariants}>
-            <BitsStats />
-          </MotionBox>
-        </Grid>
 
-        <MotionBox variants={itemVariants}>
-          <TopStreamers />
+          <Grid
+            templateAreas={{
+              base: `
+                "bits"
+                "streamers"
+              `,
+              md: `
+                "bits streamers"
+              `,
+              lg: `
+                "bits streamers"
+              `
+            }}
+            gridTemplateColumns={{
+              base: "1fr",
+              md: "1fr 1fr",
+              lg: "1fr 1fr"
+            }}
+            gap={{ base: 8, md: 10, lg: 12 }}
+            mb={{ base: 8, md: 12, lg: 16 }}
+          >
+            <MotionBox
+              variants={itemVariants}
+              gridArea="bits"
+            >
+              <BitsStats />
+            </MotionBox>
+            <MotionBox
+              variants={itemVariants}
+              gridArea="streamers"
+            >
+              <TopStreamers />
+            </MotionBox>
+          </Grid>
         </MotionBox>
-      </MotionBox>
+      </Container>
     </Box>
   )
 }
