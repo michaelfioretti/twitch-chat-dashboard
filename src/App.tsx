@@ -1,10 +1,11 @@
-import { Box, Heading, Grid, Container, useColorModeValue } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
+import { Box, Heading, Grid, Container, useColorModeValue } from '@chakra-ui/react'
+import { useQuery } from '@tanstack/react-query'
+
 import TopStreamers from './components/TopStreamers'
 import BitsStats from './components/BitsStats'
 import IntroSection from './components/IntroSection'
 import StreamerSearch from './components/StreamerSearch'
-import { useQuery } from '@tanstack/react-query'
 import { API_ENDPOINTS } from './constants/api'
 import { containerVariants, itemVariants } from './constants/animations'
 
