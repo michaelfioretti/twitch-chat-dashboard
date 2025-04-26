@@ -2,6 +2,7 @@ import { Box, Heading, Stat, StatLabel, StatNumber, Grid, Skeleton, useColorMode
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { API_ENDPOINTS } from '../constants/api'
+import { itemVariants } from '../constants/animations'
 
 const MotionBox = motion(Box)
 const MotionStat = motion(Stat)
@@ -11,30 +12,73 @@ interface BitsStats {
   totalBits: number
 }
 
-const BitsStats = () => {
-  const cardBg = useColorModeValue('gray.800', 'gray.700')
-  const cardHoverBg = useColorModeValue('gray.700', 'gray.600')
-  const textColor = useColorModeValue('gray.400', 'gray.300')
-  const statColor = useColorModeValue('white', 'white')
+interface StatCardProps {
+  label: string
+  value: string | number
+  delay?: number
+  isLoading?: boolean
+}
 
-  // Responsive values
-  const headingSize = useBreakpointValue({ base: 'sm', md: 'lg' })
+const StatCard = ({ label, value, delay = 0, isLoading = false }: StatCardProps) => {
+  const cardHoverBg = useColorModeValue('gray.700', 'gray.600')
   const statLabelSize = useBreakpointValue({ base: 'sm', md: 'xl' })
   const statNumberSize = useBreakpointValue({ base: 'xl', md: '5xl' })
-  const containerPadding = useBreakpointValue({ base: 2, md: 8 })
   const statPadding = useBreakpointValue({ base: 2, md: 4 })
+  const textColor = useColorModeValue('gray.300', 'gray.100')
+  const statColor = useColorModeValue('white', 'purple.100')
+
+  if (isLoading) {
+    return <Skeleton height="60px" />
+  }
+
+  return (
+    <MotionStat
+      variants={itemVariants}
+      custom={delay}
+      p={statPadding}
+      bg={cardHoverBg}
+      borderRadius="md"
+      textAlign="center"
+      style={{ transition: 'background 0.2s' }}
+      _hover={{ bg: cardHoverBg }}
+      position="relative"
+      overflow="hidden"
+      width="100%"
+      maxWidth="100%"
+    >
+      <StatLabel fontSize={statLabelSize} color={textColor} mb={1}>{label}</StatLabel>
+      <StatNumber
+        fontSize={statNumberSize}
+        color={statColor}
+        fontWeight="bold"
+        textShadow="0 0 10px rgba(139, 92, 246, 0.3)"
+        lineHeight="1"
+      >
+        {value}
+      </StatNumber>
+    </MotionStat>
+  )
+}
+
+const BitsStats = () => {
+  const cardBg = useColorModeValue('gray.800', 'gray.700')
+  const headingSize = useBreakpointValue({ base: 'sm', md: 'lg' })
+  const containerPadding = useBreakpointValue({ base: 2, md: 8 })
   const gridGap = useBreakpointValue({ base: 2, md: 6 })
   const marginBottom = useBreakpointValue({ base: 2, md: 6 })
 
-  const { data: stats, isLoading, isError } = useQuery<{ data: BitsStats }>({
+  const { data: stats, isLoading, isError } = useQuery<BitsStats>({
     queryKey: ['bits'],
     queryFn: async () => {
       const response = await fetch(API_ENDPOINTS.BITS)
       if (!response.ok) {
         throw new Error('Failed to fetch bits stats')
       }
-      return response.json()
-    }
+      const data = await response.json()
+      return data.data
+    },
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
   if (isLoading) {
@@ -42,8 +86,8 @@ const BitsStats = () => {
       <Box p={containerPadding} bg={cardBg} borderRadius="lg" boxShadow="xl" width="100%" maxWidth="100%">
         <Skeleton height="20px" mb={2} />
         <Grid templateColumns="1fr" gap={gridGap} width="100%">
-          <Skeleton height="60px" />
-          <Skeleton height="60px" />
+          <StatCard label="Average Bits per Message" value={0} isLoading />
+          <StatCard label="Total Bits" value={0} isLoading />
         </Grid>
       </Box>
     )
@@ -86,58 +130,16 @@ const BitsStats = () => {
       <Box position="relative" zIndex={1} width="100%" maxWidth="100%">
         <Heading size={headingSize} mb={marginBottom} color="purple.400" letterSpacing="tight">Bits Statistics</Heading>
         <Grid templateColumns="1fr" gap={gridGap} width="100%">
-          <MotionStat
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            p={statPadding}
-            bg={cardHoverBg}
-            borderRadius="md"
-            textAlign="center"
-            style={{ transition: 'background 0.2s' }}
-            _hover={{ bg: cardHoverBg }}
-            position="relative"
-            overflow="hidden"
-            width="100%"
-            maxWidth="100%"
-          >
-            <StatLabel fontSize={statLabelSize} color={textColor} mb={1}>Average Bits per Message</StatLabel>
-            <StatNumber
-              fontSize={statNumberSize}
-              color={statColor}
-              fontWeight="bold"
-              textShadow="0 0 10px rgba(139, 92, 246, 0.3)"
-              lineHeight="1"
-            >
-              {stats.data.avgBits.toFixed(2)}
-            </StatNumber>
-          </MotionStat>
-          <MotionStat
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            p={statPadding}
-            bg={cardHoverBg}
-            borderRadius="md"
-            textAlign="center"
-            style={{ transition: 'background 0.2s' }}
-            _hover={{ bg: cardHoverBg }}
-            position="relative"
-            overflow="hidden"
-            width="100%"
-            maxWidth="100%"
-          >
-            <StatLabel fontSize={statLabelSize} color={textColor} mb={1}>Total Bits</StatLabel>
-            <StatNumber
-              fontSize={statNumberSize}
-              color={statColor}
-              fontWeight="bold"
-              textShadow="0 0 10px rgba(139, 92, 246, 0.3)"
-              lineHeight="1"
-            >
-              {stats.data.totalBits.toLocaleString()}
-            </StatNumber>
-          </MotionStat>
+          <StatCard
+            label="Average Bits per Message"
+            value={stats?.avgBits?.toFixed(2) || '0.00'}
+            delay={0}
+          />
+          <StatCard
+            label="Total Bits"
+            value={stats?.totalBits?.toLocaleString() || '0'}
+            delay={0.1}
+          />
         </Grid>
       </Box>
     </Box>
