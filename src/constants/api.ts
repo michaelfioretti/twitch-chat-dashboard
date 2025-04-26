@@ -5,4 +5,5 @@ export const API_ENDPOINTS = {
   BITS: `${API_BASE_URL}/bits`,
   TOP_STREAMERS: `${API_BASE_URL}/streamer/top10`,
   STREAMER_METADATA: `${API_BASE_URL}/streamer-metadata`,
+  CHAT: `${API_BASE_URL}/chat`,
 }

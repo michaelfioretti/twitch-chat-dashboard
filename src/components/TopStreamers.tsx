@@ -10,11 +10,18 @@ import {
   Td,
   Image,
   HStack,
+  VStack,
   Heading,
   Text,
-  Tooltip,
   useColorModeValue,
   Icon,
+  Grid,
+  useBreakpointValue,
+  Card,
+  CardBody,
+  Stat,
+  StatLabel,
+  StatNumber,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -114,18 +121,96 @@ const TopStreamers = () => {
   };
 
   const getSortIcon = (field: SortField) => {
-    if (field !== sortField) return null;
+    if (field !== sortField) return undefined;
     return sortDirection === 'asc' ? ChevronUpIcon : ChevronDownIcon;
   };
 
+  const displayMode = useBreakpointValue({ base: 'cards', md: 'table' });
+  const containerPadding = useBreakpointValue({ base: 4, md: 6, lg: 8 });
+  const headingSize = useBreakpointValue({ base: 'md', md: 'lg' });
+  const gridColumns = useBreakpointValue({ base: 1, sm: 2, lg: 3 });
+  const tableFontSize = useBreakpointValue({ base: 'sm', md: 'md' });
+  const tablePadding = useBreakpointValue({ base: 2, md: 4 });
+
   if (isLoading) {
     return (
-      <Box p={8} bg={cardBg} borderRadius="xl" boxShadow="xl">
-        <Skeleton height="40px" mb={6} />
-        <Skeleton height="400px" />
+      <Box p={containerPadding} bg={cardBg} borderRadius="xl" boxShadow="xl" width="100%" maxWidth="100%">
+        <Skeleton height="40px" mb={4} />
+        {displayMode === 'cards' ? (
+          <Grid templateColumns={`repeat(${gridColumns}, 1fr)`} gap={4} width="100%">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} height="200px" borderRadius="lg" />
+            ))}
+          </Grid>
+        ) : (
+          <Skeleton height="400px" />
+        )}
       </Box>
     );
   }
+
+  const renderStreamerCard = (streamer: Streamer) => (
+    <Card
+      key={streamer.name}
+      bg={cardHoverBg}
+      borderRadius="lg"
+      overflow="hidden"
+      border="1px solid"
+      borderColor={borderColor}
+      _hover={{ transform: 'translateY(-2px)', transition: 'transform 0.2s' }}
+    >
+      <CardBody>
+        <VStack align="stretch" spacing={4}>
+          <HStack spacing={3}>
+            <Image
+              src={streamer.image}
+              alt={streamer.name}
+              boxSize="48px"
+              borderRadius="full"
+              border="2px solid"
+              borderColor="purple.400"
+            />
+            <Box>
+              <Link
+                href={`https://twitch.tv/${streamer.name}`}
+                target="_blank"
+                color="purple.400"
+                fontSize="lg"
+                fontWeight="medium"
+                _hover={{ color: 'purple.300', textDecoration: 'none' }}
+              >
+                {streamer.name}
+              </Link>
+              {streamer.broadcasterType && (
+                <Text fontSize="sm" color={textColor}>
+                  {streamer.broadcasterType}
+                </Text>
+              )}
+            </Box>
+          </HStack>
+
+          <Grid templateColumns="repeat(2, 1fr)" gap={3}>
+            <Stat size="sm">
+              <StatLabel color={textColor} fontSize="xs">Messages</StatLabel>
+              <StatNumber fontSize="md" color={statColor}>{streamer.totalMsgs.toLocaleString()}</StatNumber>
+            </Stat>
+            <Stat size="sm">
+              <StatLabel color={textColor} fontSize="xs">Total Bits</StatLabel>
+              <StatNumber fontSize="md" color={statColor}>{streamer.totalBits.toLocaleString()}</StatNumber>
+            </Stat>
+            <Stat size="sm">
+              <StatLabel color={textColor} fontSize="xs">Avg Bits</StatLabel>
+              <StatNumber fontSize="md" color={statColor}>{streamer.avgBits.toFixed(2)}</StatNumber>
+            </Stat>
+            <Stat size="sm">
+              <StatLabel color={textColor} fontSize="xs">Sub %</StatLabel>
+              <StatNumber fontSize="md" color={statColor}>{streamer.subPercentage.toFixed(1)}%</StatNumber>
+            </Stat>
+          </Grid>
+        </VStack>
+      </CardBody>
+    </Card>
+  );
 
   return (
     <Box
@@ -133,14 +218,17 @@ const TopStreamers = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       style={{ transition: 'all 0.5s' }}
-      p={8}
+      p={containerPadding}
       bg={cardBg}
       borderRadius="xl"
       boxShadow="xl"
       border="1px solid"
       borderColor={borderColor}
-      overflowX="auto"
       position="relative"
+      width="100%"
+      maxWidth="100%"
+      mx="auto"
+      overflow="hidden"
       _before={{
         content: '""',
         position: "absolute",
@@ -152,176 +240,191 @@ const TopStreamers = () => {
         zIndex: 0
       }}
     >
-      <Box position="relative" zIndex={1}>
-        <Heading size="lg" mb={8} color="purple.400" letterSpacing="tight">Top Streamers</Heading>
-        <Table variant="simple" colorScheme="whiteAlpha" size="lg">
-          <Thead>
-            <Tr>
-              <Th
-                color={textColor}
-                fontSize="md"
-                py={4}
-                borderBottomColor={borderColor}
-              >
-                Streamer
-              </Th>
-              <Th
-                isNumeric
-                color={textColor}
-                fontSize="md"
-                py={4}
-                borderBottomColor={borderColor}
-                cursor="pointer"
-                onClick={() => handleSort('totalMsgs')}
-                _hover={{ color: 'purple.400' }}
-              >
-                <HStack justify="flex-end" spacing={1}>
-                  <Text>Total Messages</Text>
-                  {getSortIcon('totalMsgs') && (
-                    <Icon as={getSortIcon('totalMsgs')} boxSize={4} />
-                  )}
-                </HStack>
-              </Th>
-              <Th
-                isNumeric
-                color={textColor}
-                fontSize="md"
-                py={4}
-                borderBottomColor={borderColor}
-                cursor="pointer"
-                onClick={() => handleSort('totalBits')}
-                _hover={{ color: 'purple.400' }}
-              >
-                <HStack justify="flex-end" spacing={1}>
-                  <Text>Total Bits</Text>
-                  {getSortIcon('totalBits') && (
-                    <Icon as={getSortIcon('totalBits')} boxSize={4} />
-                  )}
-                </HStack>
-              </Th>
-              <Th
-                isNumeric
-                color={textColor}
-                fontSize="md"
-                py={4}
-                borderBottomColor={borderColor}
-                cursor="pointer"
-                onClick={() => handleSort('avgBits')}
-                _hover={{ color: 'purple.400' }}
-              >
-                <HStack justify="flex-end" spacing={1}>
-                  <Text>Avg Bits/Message</Text>
-                  {getSortIcon('avgBits') && (
-                    <Icon as={getSortIcon('avgBits')} boxSize={4} />
-                  )}
-                </HStack>
-              </Th>
-              <Th
-                isNumeric
-                color={textColor}
-                fontSize="md"
-                py={4}
-                borderBottomColor={borderColor}
-                cursor="pointer"
-                onClick={() => handleSort('modPercentage')}
-                _hover={{ color: 'purple.400' }}
-              >
-                <HStack justify="flex-end" spacing={1}>
-                  <Text>Mod %</Text>
-                  {getSortIcon('modPercentage') && (
-                    <Icon as={getSortIcon('modPercentage')} boxSize={4} />
-                  )}
-                </HStack>
-              </Th>
-              <Th
-                isNumeric
-                color={textColor}
-                fontSize="md"
-                py={4}
-                borderBottomColor={borderColor}
-                cursor="pointer"
-                onClick={() => handleSort('subPercentage')}
-                _hover={{ color: 'purple.400' }}
-              >
-                <HStack justify="flex-end" spacing={1}>
-                  <Text>Sub %</Text>
-                  {getSortIcon('subPercentage') && (
-                    <Icon as={getSortIcon('subPercentage')} boxSize={4} />
-                  )}
-                </HStack>
-              </Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {streamers.map((streamer, index) => (
-              <MotionTr
-                key={streamer.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ transition: `all 0.3s ${index * 0.1}s` }}
-                _hover={{ bg: cardHoverBg }}
-              >
-                <Td py={4} borderBottomColor={borderColor}>
-                  <HStack spacing={4}>
-                    <Box
-                      as={motion.div}
-                      whileHover={{ scale: 1.1 }}
-                      style={{ transition: 'transform 0.2s' }}
-                    >
-                      <Image
-                        src={streamer.image}
-                        alt={streamer.name}
-                        boxSize="48px"
-                        borderRadius="full"
-                        border="2px solid"
-                        borderColor="purple.400"
-                      />
-                    </Box>
-                    <Box>
-                      <Link
-                        href={streamer.profile}
-                        target="_blank"
-                        color="purple.400"
-                        fontSize="lg"
-                        fontWeight="medium"
-                        _hover={{ color: 'purple.300', textDecoration: 'none' }}
-                      >
-                        {streamer.name}
-                      </Link>
-                      {streamer.broadcasterType && (
-                        <Text fontSize="sm" color={textColor}>
-                          {streamer.broadcasterType}
-                        </Text>
+      <Box position="relative" zIndex={1} width="100%" maxWidth="100%">
+        <Heading size={headingSize} mb={6} color="purple.400" letterSpacing="tight">
+          Top 10 Streamers by Chat
+        </Heading>
+
+        {displayMode === 'cards' ? (
+          <Grid templateColumns={`repeat(${gridColumns}, 1fr)`} gap={4} width="100%">
+            {streamers.map(renderStreamerCard)}
+          </Grid>
+        ) : (
+          <Box width="100%" maxWidth="100%" overflowX="auto">
+            <Table variant="simple" colorScheme="whiteAlpha" size={tableFontSize} width="100%">
+              <Thead>
+                <Tr>
+                  <Th
+                    color={textColor}
+                    fontSize={tableFontSize}
+                    py={tablePadding}
+                    borderBottomColor={borderColor}
+                    whiteSpace="nowrap"
+                    width="25%"
+                  >
+                    Streamer
+                  </Th>
+                  <Th
+                    isNumeric
+                    color={textColor}
+                    fontSize={tableFontSize}
+                    py={tablePadding}
+                    borderBottomColor={borderColor}
+                    cursor="pointer"
+                    onClick={() => handleSort('totalMsgs')}
+                    _hover={{ color: 'purple.400' }}
+                    whiteSpace="nowrap"
+                    width="15%"
+                  >
+                    <HStack justify="flex-end" spacing={1}>
+                      <Text>Total Messages</Text>
+                      {getSortIcon('totalMsgs') && (
+                        <Icon as={getSortIcon('totalMsgs')} boxSize={4} />
                       )}
-                      {streamer.description && (
-                        <Tooltip label={streamer.description} placement="right">
-                          <Text fontSize="sm" color={textColor} noOfLines={1}>
-                            {streamer.description}
-                          </Text>
-                        </Tooltip>
+                    </HStack>
+                  </Th>
+                  <Th
+                    isNumeric
+                    color={textColor}
+                    fontSize={tableFontSize}
+                    py={tablePadding}
+                    borderBottomColor={borderColor}
+                    cursor="pointer"
+                    onClick={() => handleSort('totalBits')}
+                    _hover={{ color: 'purple.400' }}
+                    whiteSpace="nowrap"
+                    width="15%"
+                  >
+                    <HStack justify="flex-end" spacing={1}>
+                      <Text>Total Bits</Text>
+                      {getSortIcon('totalBits') && (
+                        <Icon as={getSortIcon('totalBits')} boxSize={4} />
                       )}
-                    </Box>
-                  </HStack>
-                </Td>
-                <Td isNumeric color={statColor} fontSize="lg" py={4} borderBottomColor={borderColor}>
-                  {streamer.totalMsgs.toLocaleString()}
-                </Td>
-                <Td isNumeric color={statColor} fontSize="lg" py={4} borderBottomColor={borderColor}>
-                  {streamer.totalBits.toLocaleString()}
-                </Td>
-                <Td isNumeric color={statColor} fontSize="lg" py={4} borderBottomColor={borderColor}>
-                  {streamer.avgBits.toFixed(3)}
-                </Td>
-                <Td isNumeric color={statColor} fontSize="lg" py={4} borderBottomColor={borderColor}>
-                  {streamer.modPercentage.toFixed(1)}%
-                </Td>
-                <Td isNumeric color={statColor} fontSize="lg" py={4} borderBottomColor={borderColor}>
-                  {streamer.subPercentage.toFixed(1)}%
-                </Td>
-              </MotionTr>
-            ))}
-          </Tbody>
-        </Table>
+                    </HStack>
+                  </Th>
+                  <Th
+                    isNumeric
+                    color={textColor}
+                    fontSize={tableFontSize}
+                    py={tablePadding}
+                    borderBottomColor={borderColor}
+                    cursor="pointer"
+                    onClick={() => handleSort('avgBits')}
+                    _hover={{ color: 'purple.400' }}
+                    whiteSpace="nowrap"
+                    width="15%"
+                  >
+                    <HStack justify="flex-end" spacing={1}>
+                      <Text>Avg Bits/Message</Text>
+                      {getSortIcon('avgBits') && (
+                        <Icon as={getSortIcon('avgBits')} boxSize={4} />
+                      )}
+                    </HStack>
+                  </Th>
+                  <Th
+                    isNumeric
+                    color={textColor}
+                    fontSize={tableFontSize}
+                    py={tablePadding}
+                    borderBottomColor={borderColor}
+                    cursor="pointer"
+                    onClick={() => handleSort('modPercentage')}
+                    _hover={{ color: 'purple.400' }}
+                    whiteSpace="nowrap"
+                    width="15%"
+                  >
+                    <HStack justify="flex-end" spacing={1}>
+                      <Text>Mod %</Text>
+                      {getSortIcon('modPercentage') && (
+                        <Icon as={getSortIcon('modPercentage')} boxSize={4} />
+                      )}
+                    </HStack>
+                  </Th>
+                  <Th
+                    isNumeric
+                    color={textColor}
+                    fontSize={tableFontSize}
+                    py={tablePadding}
+                    borderBottomColor={borderColor}
+                    cursor="pointer"
+                    onClick={() => handleSort('subPercentage')}
+                    _hover={{ color: 'purple.400' }}
+                    whiteSpace="nowrap"
+                    width="15%"
+                  >
+                    <HStack justify="flex-end" spacing={1}>
+                      <Text>Sub %</Text>
+                      {getSortIcon('subPercentage') && (
+                        <Icon as={getSortIcon('subPercentage')} boxSize={4} />
+                      )}
+                    </HStack>
+                  </Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {streamers.map((streamer) => (
+                  <MotionTr
+                    key={streamer.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ transition: 'all 0.3s' }}
+                    _hover={{ bg: cardHoverBg }}
+                  >
+                    <Td py={tablePadding} borderBottomColor={borderColor} width="25%">
+                      <HStack spacing={4}>
+                        <Image
+                          src={streamer.image}
+                          alt={streamer.name}
+                          boxSize="48px"
+                          borderRadius="full"
+                          border="2px solid"
+                          borderColor="purple.400"
+                        />
+                        <Box>
+                          <Link
+                            href={`https://twitch.tv/${streamer.name}`}
+                            target="_blank"
+                            color="purple.400"
+                            fontSize={tableFontSize}
+                            fontWeight="medium"
+                            _hover={{ color: 'purple.300', textDecoration: 'none' }}
+                          >
+                            {streamer.name}
+                          </Link>
+                          {streamer.broadcasterType && (
+                            <Text fontSize="sm" color={textColor}>
+                              {streamer.broadcasterType}
+                            </Text>
+                          )}
+                          {streamer.description && (
+                            <Text fontSize="sm" color={textColor} noOfLines={1}>
+                              {streamer.description}
+                            </Text>
+                          )}
+                        </Box>
+                      </HStack>
+                    </Td>
+                    <Td isNumeric color={statColor} fontSize={tableFontSize} py={tablePadding} borderBottomColor={borderColor} width="15%">
+                      {streamer.totalMsgs.toLocaleString()}
+                    </Td>
+                    <Td isNumeric color={statColor} fontSize={tableFontSize} py={tablePadding} borderBottomColor={borderColor} width="15%">
+                      {streamer.totalBits.toLocaleString()}
+                    </Td>
+                    <Td isNumeric color={statColor} fontSize={tableFontSize} py={tablePadding} borderBottomColor={borderColor} width="15%">
+                      {streamer.avgBits.toFixed(2)}
+                    </Td>
+                    <Td isNumeric color={statColor} fontSize={tableFontSize} py={tablePadding} borderBottomColor={borderColor} width="15%">
+                      {streamer.modPercentage.toFixed(1)}%
+                    </Td>
+                    <Td isNumeric color={statColor} fontSize={tableFontSize} py={tablePadding} borderBottomColor={borderColor} width="15%">
+                      {streamer.subPercentage.toFixed(1)}%
+                    </Td>
+                  </MotionTr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
+        )}
       </Box>
     </Box>
   );

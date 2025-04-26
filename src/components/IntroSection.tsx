@@ -73,7 +73,7 @@ const IntroSection = () => {
           lineHeight="tall"
           textAlign="center"
         >
-          Over the past 30 days, our Twitch chat has been buzzing with activity! We've seen an impressive{' '}
+          This website keeps track of some of the top Twitch streams of the past 24 hours. Over the last 24 hours, we've seen an impressive{' '}
           <Text as="span" color={highlightColor} fontWeight="bold">
             {stats.totalMessages.toLocaleString()}
           </Text>{' '}
@@ -81,7 +81,7 @@ const IntroSection = () => {
           <Text as="span" color={highlightColor} fontWeight="bold">
             {stats.uniqueUsers.toLocaleString()}
           </Text>{' '}
-          unique users. This vibrant community engagement showcases the incredible support and interaction from our viewers.
+          unique users. Scroll down to see the top streamers of the past 24 hours, or search for your favorite streamer below.
         </Text>
       </Box>
     </MotionBox>

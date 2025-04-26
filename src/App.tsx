@@ -3,9 +3,19 @@ import { motion } from 'framer-motion'
 import TopStreamers from './components/TopStreamers'
 import BitsStats from './components/BitsStats'
 import IntroSection from './components/IntroSection'
+import StreamerSearch from './components/StreamerSearch'
+import { useQuery } from '@tanstack/react-query'
+import { API_ENDPOINTS } from './constants/api'
 
 const MotionBox = motion(Box)
 const MotionHeading = motion(Heading)
+
+interface StreamerMetadata {
+  name: string;
+  broadcasterType: string;
+  description: string;
+  image: string;
+}
 
 function App() {
   const containerVariants = {
@@ -31,10 +41,21 @@ function App() {
     }
   }
 
+  const { data: metadataData } = useQuery<StreamerMetadata[]>({
+    queryKey: ['streamerMetadata'],
+    queryFn: async () => {
+      const response = await fetch(API_ENDPOINTS.STREAMER_METADATA);
+      if (!response.ok) {
+        throw new Error('Failed to fetch streamer metadata');
+      }
+      return response.json();
+    }
+  });
+
   return (
     <Box
       minH="100vh"
-      w="100vw"
+      w="100%"
       bg="gray.900"
       color="white"
       position="relative"
@@ -51,11 +72,12 @@ function App() {
       }}
     >
       <Container
-        maxW="100%"
-        px={{ base: 4, md: 8, lg: 12 }}
-        py={{ base: 8, md: 12, lg: 16 }}
+        maxW={{ base: "container.sm", md: "container.md", lg: "container.lg" }}
+        px={{ base: 4, md: 6, lg: 8 }}
+        py={{ base: 6, md: 8, lg: 12 }}
         position="relative"
         zIndex={1}
+        mx="auto"
       >
         <MotionBox
           initial="hidden"
@@ -64,22 +86,29 @@ function App() {
         >
           <MotionHeading
             variants={itemVariants}
-            mb={{ base: 8, md: 12, lg: 16 }}
+            mb={{ base: 6, md: 8, lg: 12 }}
             textAlign="center"
             size={{ base: "2xl", md: "3xl", lg: "4xl" }}
-            color="purple.400"
+            color="white"
             letterSpacing="tight"
             fontWeight="bold"
             textShadow="0 0 20px rgba(139, 92, 246, 0.3)"
           >
-            Twitch Chat Analytics
+            Top Twitch Streams by Chat
           </MotionHeading>
 
           <MotionBox
             variants={itemVariants}
-            mb={{ base: 8, md: 12, lg: 16 }}
+            mb={{ base: 6, md: 8, lg: 12 }}
           >
             <IntroSection />
+          </MotionBox>
+
+          <MotionBox
+            variants={itemVariants}
+            mb={{ base: 6, md: 8, lg: 12 }}
+          >
+            <StreamerSearch metadata={metadataData || []} />
           </MotionBox>
 
           <Grid
@@ -89,29 +118,40 @@ function App() {
                 "streamers"
               `,
               md: `
-                "bits streamers"
+                "bits"
+                "streamers"
               `,
               lg: `
-                "bits streamers"
+                "bits"
+                "streamers"
               `
             }}
             gridTemplateColumns={{
               base: "1fr",
-              md: "1fr 1fr",
-              lg: "1fr 1fr"
+              md: "1fr",
+              lg: "1fr"
             }}
-            gap={{ base: 8, md: 10, lg: 12 }}
-            mb={{ base: 8, md: 12, lg: 16 }}
+            gap={{ base: 6, md: 8, lg: 10 }}
+            mb={{ base: 6, md: 8, lg: 12 }}
+            width="100%"
+            maxWidth="100%"
+            overflow="hidden"
           >
             <MotionBox
               variants={itemVariants}
               gridArea="bits"
+              width="100%"
+              maxWidth="100%"
+              overflow="hidden"
             >
               <BitsStats />
             </MotionBox>
             <MotionBox
               variants={itemVariants}
               gridArea="streamers"
+              width="100%"
+              maxWidth="100%"
+              overflow="hidden"
             >
               <TopStreamers />
             </MotionBox>
