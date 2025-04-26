@@ -2,7 +2,7 @@ import { Box, Heading, Stat, StatLabel, StatNumber, Grid, Skeleton, useColorMode
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { API_ENDPOINTS } from '../constants/api'
-import { itemVariants } from '../constants/animations'
+// import { itemVariants } from '../constants/animations'
 
 const MotionBox = motion(Box)
 const MotionStat = motion(Stat)
@@ -15,11 +15,10 @@ interface BitsStats {
 interface StatCardProps {
   label: string
   value: string | number
-  delay?: number
   isLoading?: boolean
 }
 
-const StatCard = ({ label, value, delay = 0, isLoading = false }: StatCardProps) => {
+const StatCard = ({ label, value, isLoading = false }: StatCardProps) => {
   const cardHoverBg = useColorModeValue('gray.700', 'gray.600')
   const statLabelSize = useBreakpointValue({ base: 'sm', md: 'xl' })
   const statNumberSize = useBreakpointValue({ base: 'xl', md: '5xl' })
@@ -33,8 +32,6 @@ const StatCard = ({ label, value, delay = 0, isLoading = false }: StatCardProps)
 
   return (
     <MotionStat
-      variants={itemVariants}
-      custom={delay}
       p={statPadding}
       bg={cardHoverBg}
       borderRadius="md"
@@ -87,7 +84,7 @@ const BitsStats = () => {
         <Skeleton height="20px" mb={2} />
         <Grid templateColumns="1fr" gap={gridGap} width="100%">
           <StatCard label="Average Bits per Message" value={0} isLoading />
-          <StatCard label="Total Bits" value={0} isLoading />
+          <StatCard label="Total Bits Donated" value={0} isLoading />
         </Grid>
       </Box>
     )
@@ -102,9 +99,7 @@ const BitsStats = () => {
   }
 
   return (
-    <Box
-      as={MotionBox}
-      whileHover={{ scale: 1.02 }}
+    <MotionBox
       p={containerPadding}
       bg={cardBg}
       borderRadius="lg"
@@ -116,16 +111,6 @@ const BitsStats = () => {
       width="100%"
       maxWidth="100%"
       mx="auto"
-      _before={{
-        content: '""',
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: "100%",
-        background: "radial-gradient(circle at top right, rgba(139, 92, 246, 0.1) 0%, transparent 70%)",
-        zIndex: 0
-      }}
     >
       <Box position="relative" zIndex={1} width="100%" maxWidth="100%">
         <Heading size={headingSize} mb={marginBottom} color="purple.400" letterSpacing="tight">Bits Statistics</Heading>
@@ -133,16 +118,14 @@ const BitsStats = () => {
           <StatCard
             label="Average Bits per Message"
             value={stats?.avgBits?.toFixed(2) || '0.00'}
-            delay={0}
           />
           <StatCard
             label="Total Bits"
             value={stats?.totalBits?.toLocaleString() || '0'}
-            delay={0.1}
           />
         </Grid>
       </Box>
-    </Box>
+    </MotionBox>
   )
 }
 
