@@ -8,6 +8,3 @@ Thiss website provides analytics for Twitch chat activity. It visualizes top str
 - Bits statistics (average bits per message, total bits donated)
 - Streamer search and metadata
 - Responsive, modern UI built with React, Chakra UI, and Framer Motion
-
-## Website
-View the live site [here](https://twitch-chat-dashboard.onrender.com/)
